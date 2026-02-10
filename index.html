@@ -3,92 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smile AI - Global Assistant</title>
+    <title>Smile AI - Mission 20 Lakh</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { background-color: #131314; color: #e3e3e3; font-family: 'Inter', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .chat-area { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 120px; }
-        .input-container { position: fixed; bottom: 0; left: 0; right: 0; background: #131314; padding: 15px; }
+        .chat-area { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 120px; scroll-behavior: smooth; }
+        .input-container { position: fixed; bottom: 0; left: 0; right: 0; background: #131314; padding: 15px; border-top: 1px solid #333; }
         .input-bar { background: #1e1f20; border-radius: 30px; padding: 8px 15px; display: flex; align-items: center; border: 1px solid #3c4043; max-width: 600px; margin: 0 auto; }
         input { background: transparent; border: none; outline: none; color: white; flex: 1; font-size: 16px; padding: 10px; }
-        .mic-btn { color: #8ab4f8; font-size: 22px; cursor: pointer; margin-right: 10px; }
-        .mic-active { color: #ea4335; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .mic-btn { color: #8ab4f8; font-size: 22px; cursor: pointer; margin-right: 10px; transition: 0.3s; }
+        .mic-active { color: #ea4335; transform: scale(1.3); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .ai-msg { background: #1e1f20; border-radius: 15px 15px 15px 0; padding: 12px; max-width: 85%; align-self: flex-start; margin-bottom: 10px; }
+        .user-msg { background: #0b57d0; border-radius: 15px 15px 0 15px; padding: 12px; max-width: 85%; align-self: flex-end; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <header class="p-4 flex justify-between items-center border-b border-gray-800">
-        <div class="text-xl font-bold text-blue-400">Smile AI <span class="text-xs text-gray-500">Universal</span></div>
-        <div id="status" class="text-[10px] bg-green-900 text-green-300 px-2 py-1 rounded">System Ready</div>
+    <header class="p-4 flex justify-between items-center border-b border-gray-800 bg-[#131314] z-10">
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center font-bold">S</div>
+            <div class="text-xl font-bold text-white">Smile AI <span class="text-[10px] text-blue-400">PRO</span></div>
+        </div>
+        <div class="text-[10px] bg-green-900 text-green-300 px-2 py-1 rounded">20L Mission Active</div>
     </header>
 
-    <main id="chatBox" class="chat-area flex flex-col space-y-4">
-        <div class="text-center mt-10" id="welcome">
-            <h1 class="text-2xl font-bold">Boliye, Main Sun raha hoon...</h1>
-            <p class="text-gray-400 mt-2 text-sm">"Hey Smile, help me" or "Search iPhone 15"</p>
+    <main id="chatBox" class="chat-area flex flex-col">
+        <div class="text-center mt-20" id="welcomeScreen">
+            <i class="fa-solid fa-microphone-lines text-5xl text-blue-500 mb-4"></i>
+            <h1 class="text-2xl font-bold">Boliye Smile AI se...</h1>
+            <p class="text-gray-400 mt-2 px-10 text-sm">"Emergency Help", "Buy iPhone", "Need a Loan" ya gaane sunne ke liye mic dabayein.</p>
         </div>
     </main>
 
     <div class="input-container">
         <div class="input-bar">
-            <button onclick="startVoice()" id="micIcon" class="mic-btn">
+            <button onclick="toggleMic()" id="micBtn" class="mic-btn">
                 <i class="fa-solid fa-microphone"></i>
             </button>
-            <input id="msgInput" type="text" placeholder="Smile AI se kuch bhi pucho...">
-            <button onclick="sendMsg()" class="text-blue-400 font-bold ml-2">Send</button>
+            <input id="userInput" type="text" placeholder="Smile AI se kuch bhi pucho..." onkeypress="handleEnter(event)">
+            <button onclick="processMessage()" class="text-blue-400 font-bold px-2">Send</button>
         </div>
     </div>
 
     <script>
-        // VOICE RECOGNITION SETUP
-        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const mic = new Recognition();
-        mic.lang = 'hi-IN'; // Hindi + English support
+        const chatBox = document.getElementById('chatBox');
+        const welcome = document.getElementById('welcomeScreen');
+        const userInput = document.getElementById('userInput');
+        const micBtn = document.getElementById('micBtn');
 
-        function startVoice() {
-            mic.start();
-            document.getElementById('micIcon').classList.add('mic-active');
+        // 🎤 VOICE RECOGNITION ENGINE
+        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        if (Recognition) {
+            recognition = new Recognition();
+            recognition.lang = 'hi-IN';
+            recognition.continuous = false;
+
+            recognition.onstart = () => { micBtn.classList.add('mic-active'); };
+            recognition.onend = () => { micBtn.classList.remove('mic-active'); };
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                userInput.value = transcript;
+                processMessage();
+            };
         }
 
-        mic.onresult = (event) => {
-            const text = event.results[0][0].transcript;
-            document.getElementById('msgInput').value = text;
-            document.getElementById('micIcon').classList.remove('mic-active');
-            sendMsg();
-        };
+        function toggleMic() {
+            if (recognition) recognition.start();
+            else alert("Voice feature not supported in this browser.");
+        }
 
-        async function sendMsg() {
-            const input = document.getElementById('msgInput');
-            const box = document.getElementById('chatBox');
-            const val = input.value.trim();
-            if(!val) return;
+        function handleEnter(e) { if (e.key === 'Enter') processMessage(); }
 
-            document.getElementById('welcome').style.display = 'none';
-            box.innerHTML += `<div class="self-end bg-blue-600 p-3 rounded-2xl max-w-[80%]">${val}</div>`;
-            input.value = "";
+        async function processMessage() {
+            const msg = userInput.value.trim();
+            if (!msg) return;
+
+            welcome.style.display = 'none';
+            addMessage(msg, 'user-msg');
+            userInput.value = '';
+
+            // Loading state
+            const loadingId = addMessage('Smile AI soch raha hai...', 'ai-msg');
 
             try {
-                // APNA RENDER LINK YAHAN CHECK KARO
-                const res = await fetch('https://smile-finance-ai-live.onrender.com/chat', {
+                // APKA RENDER LINK CONNECTED
+                const response = await fetch('https://smile-financial-service-ai.onrender.com/chat', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({message: val})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
                 });
-                const data = await res.json();
                 
-                // Emergency Voice Alert
-                if(data.reply.includes('EMERGENCY')) {
-                    alert('SOS Activated! Help is on the way.');
-                    window.location.href = "tel:112"; // Auto-dial police
+                const data = await response.json();
+                document.getElementById(loadingId).innerHTML = `✨ ${data.reply}`;
+
+                // 🚨 EMERGENCY AUTO-CALL TRIGGER
+                if (data.reply.includes('EMERGENCY')) {
+                    setTimeout(() => { window.location.href = "tel:112"; }, 2000);
                 }
 
-                box.innerHTML += `<div class="self-start bg-gray-800 p-3 rounded-2xl max-w-[90%]">✨ ${data.reply}</div>`;
-            } catch(e) {
-                box.innerHTML += `<div class="text-red-400">Connecting to Smile Engine...</div>`;
+            } catch (error) {
+                document.getElementById(loadingId).innerHTML = "⚠️ Connection Error. Render server start ho raha hai, 1 min baad try karein.";
             }
-            box.scrollTop = box.scrollHeight;
+        }
+
+        function addMessage(text, className) {
+            const id = 'msg-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = className;
+            div.innerText = text;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return id;
         }
     </script>
 </body>

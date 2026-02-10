@@ -2,209 +2,114 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smile AI - Human-Like Intelligence</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smile AI - Personal Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAos_jqEHQ_urQiOQsxg2m_pNJBjor0CZQ",
-            authDomain: "smileai-24.firebaseapp.com",
-            projectId: "smileai-24",
-            storageBucket: "smileai-24.firebasestorage.app",
-            messagingSenderId: "470315069061",
-            appId: "1:470315069061:web:31ccd87455ae19cc05c3ec"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        window.handleLogin = () => signInWithPopup(auth, provider);
-        window.handleLogout = () => signOut(auth);
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('loginOverlay').style.opacity = '0';
-                setTimeout(() => document.getElementById('loginOverlay').style.display = 'none', 500);
-                document.getElementById('user_name').innerText = user.displayName;
-                document.getElementById('user_img').src = user.photoURL;
-            } else {
-                document.getElementById('loginOverlay').style.display = 'flex';
-            }
-        });
-    </script>
-
     <style>
-        * { -webkit-tap-highlight-color: transparent; }
-        body { background: #0e0e10; color: #f0f0f0; font-family: 'Segoe UI', Roboto, sans-serif; height: 100dvh; overflow: hidden; }
-        .gemini-gradient { background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .sidebar { width: 280px; background: #18191b; transition: transform 0.3s ease; z-index: 50; }
-        @media (max-width: 768px) { .sidebar { position: absolute; height: 100%; transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } }
-        .chat-scroll { scrollbar-width: none; -ms-overflow-style: none; }
-        .chat-scroll::-webkit-scrollbar { display: none; }
-        .human-input { background: #1e1f20; border-radius: 28px; transition: all 0.3s; border: 1px solid #333; }
-        .human-input:focus-within { border-color: #555; background: #232425; }
-        .typing-effect::after { content: '|'; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
+        body { background-color: #ffffff; color: #1f1f1f; font-family: 'Segoe UI', Roboto, sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; }
+        .header { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
+        .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; overflow-y: auto; padding-bottom: 100px; }
+        .greet-box { width: 90%; max-width: 700px; margin-top: 40px; }
+        .greet-text { font-size: 32px; font-weight: 500; color: #1f1f1f; line-height: 1.2; }
+        .sub-greet { font-size: 32px; color: #c4c7c5; }
+        .chip-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 30px; }
+        .chip { background: #f0f4f9; border: none; padding: 20px; border-radius: 16px; font-size: 14px; cursor: pointer; transition: 0.2s; text-align: left; position: relative; }
+        .chip:hover { background: #e1e5ea; }
+        .chip i { position: absolute; bottom: 15px; right: 15px; font-size: 18px; color: #444; }
+        .input-wrapper { position: fixed; bottom: 0; width: 100%; background: white; padding: 15px 0; display: flex; justify-content: center; }
+        .input-area { width: 90%; max-width: 760px; background: #f0f4f9; border-radius: 28px; padding: 10px 20px; display: flex; align-items: center; }
+        input { background: transparent; border: none; outline: none; flex: 1; padding: 10px; font-size: 16px; }
+        .icons { display: flex; gap: 18px; font-size: 20px; color: #444746; }
+        .msg-row { width: 100%; max-width: 700px; margin: 15px 0; display: flex; }
+        .ai-response { display: flex; gap: 15px; width: 100%; }
+        .ai-icon { width: 32px; height: 32px; background: #4285f4; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; flex-shrink: 0; }
     </style>
 </head>
-<body class="flex">
+<body>
 
-    <div id="loginOverlay" class="fixed inset-0 bg-[#0e0e10] z-[3000] flex flex-col items-center justify-center p-8 transition-opacity duration-500">
-        <div class="w-20 h-20 mb-6 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-3xl rotate-12 flex items-center justify-center shadow-2xl">
-            <span class="text-4xl font-bold text-white -rotate-12">S</span>
+    <div class="header">
+        <div class="flex items-center gap-4">
+            <i class="fa-solid fa-bars text-lg cursor-pointer text-gray-600"></i>
+            <span class="text-xl font-medium text-gray-700">Smile AI <span class="text-xs bg-gray-200 px-2 rounded">v4.0</span></span>
         </div>
-        <h1 class="text-4xl font-bold mb-2">Smile AI</h1>
-        <p class="text-gray-500 mb-10 text-center text-sm">Created by Smile Financial Solution<br>Expert Intelligence for Everyone</p>
-        <button onclick="handleLogin()" class="bg-white text-black px-10 py-4 rounded-2xl font-bold flex items-center gap-4 hover:scale-105 active:scale-95 transition">
-            <img src="https://www.google.com/favicon.ico" class="w-5"> Start with Google
-        </button>
+        <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white text-xs cursor-pointer">A</div>
     </div>
 
-    <aside id="sidebar" class="sidebar flex flex-col border-r border-gray-800">
-        <div class="p-6 flex justify-between items-center">
-            <span class="text-xl font-bold gemini-gradient italic">Smile AI</span>
-            <button onclick="toggleSidebar()" class="lg:hidden text-gray-400"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        
-        <nav class="flex-1 px-3 space-y-1">
-            <div onclick="shop('Best Offers')" class="flex items-center p-4 hover:bg-[#2d2e30] rounded-2xl cursor-pointer text-sm">
-                <i class="fa-solid fa-bag-shopping mr-4 text-blue-400"></i>Shopping Mall
-            </div>
-            <div onclick="shop('Financial Advice')" class="flex items-center p-4 hover:bg-[#2d2e30] rounded-2xl cursor-pointer text-sm">
-                <i class="fa-solid fa-chart-line mr-4 text-green-400"></i>Financial Services
-            </div>
-            <div onclick="location.reload()" class="flex items-center p-4 hover:bg-[#2d2e30] rounded-2xl cursor-pointer text-sm">
-                <i class="fa-solid fa-plus mr-4 text-gray-400"></i>New Chat
-            </div>
-        </nav>
-
-        <div class="p-4 border-t border-gray-800">
-            <div class="flex items-center gap-3 p-3 bg-[#2d2e30] rounded-2xl">
-                <img id="user_img" class="w-10 h-10 rounded-full border border-gray-700 shadow-lg">
-                <div class="flex-1 overflow-hidden">
-                    <p id="user_name" class="text-xs font-bold truncate text-gray-200"></p>
-                    <button onclick="handleLogout()" class="text-[10px] text-red-400 font-bold uppercase tracking-tighter">Sign Out</button>
-                </div>
+    <div class="main-content" id="scrollArea">
+        <div id="intro" class="greet-box">
+            <h1 class="greet-text">नमस्ते, Aarif Bhai<br><span class="sub-greet">आज मैं आपकी क्या मदद कर सकता हूँ?</span></h1>
+            
+            <div class="chip-container">
+                <div class="chip" onclick="autoFill('बेस्ट फैशन डील्स दिखाओ')">लेटेस्ट फैशन और कपड़े <i class="fa-solid fa-shirt"></i></div>
+                <div class="chip" onclick="autoFill('टॉप इलेक्ट्रॉनिक्स गैजेट्स')">इलेक्ट्रॉनिक्स और गैजेट्स <i class="fa-solid fa-bolt"></i></div>
+                <div class="chip" onclick="autoFill('आयुर्वेदिक दवाइयां')">हेल्थ और आयुर्वेद <i class="fa-solid fa-leaf"></i></div>
+                <div class="chip" onclick="autoFill('बच्चों के खिलौने')">किड्स और टॉयज <i class="fa-solid fa-robot"></i></div>
             </div>
         </div>
-    </aside>
+        <div id="chatbox" class="w-full max-w-[700px] flex flex-col p-4"></div>
+    </div>
 
-    <main class="flex-1 flex flex-col relative">
-        <header class="p-4 flex items-center gap-4 lg:p-6">
-            <button onclick="toggleSidebar()" class="p-2 bg-[#1e1f20] rounded-xl lg:hidden">
-                <i class="fa-solid fa-bars text-gray-400"></i>
-            </button>
-            <div class="flex-1">
-                <p class="text-[10px] font-bold text-gray-500 tracking-widest uppercase">Expert Mode</p>
-                <h2 class="text-sm font-medium text-gray-300">Smile Financial Solution AI</h2>
+    <div class="input-wrapper">
+        <div class="input-area">
+            <i class="fa-solid fa-paperclip text-gray-500 cursor-pointer"></i>
+            <input id="q" type="text" placeholder="Smile AI से कुछ भी पूछें..." onkeypress="if(event.key=='Enter') startChat()">
+            <div class="icons">
+                <i class="fa-solid fa-microphone cursor-pointer text-blue-500" onclick="voiceIn()"></i>
+                <i class="fa-solid fa-paper-plane cursor-pointer" onclick="startChat()"></i>
             </div>
-        </header>
-
-        <div class="flex-1 chat-scroll overflow-y-auto px-4 lg:px-20" id="chat">
-            <div id="welcome" class="mt-20 max-w-2xl mx-auto">
-                <h1 class="text-4xl lg:text-6xl font-bold mb-6"><span class="gemini-gradient">Kaise ho, Aarif Bhai?</span></h1>
-                <p class="text-xl lg:text-2xl text-gray-500 font-medium leading-relaxed">Main dunya ki har bhasha aur har sawal ka jawab jaanta hoon. Kuch pucho...</p>
-                
-                <div class="grid grid-cols-2 gap-3 mt-12">
-                    <div onclick="ask('Latest smartphone deals')" class="p-4 bg-[#1e1f20] rounded-3xl border border-gray-800 text-sm hover:border-blue-500 cursor-pointer transition">Saste Mobiles dikhao</div>
-                    <div onclick="ask('What is Smile Financial Solution?')" class="p-4 bg-[#1e1f20] rounded-3xl border border-gray-800 text-sm hover:border-green-500 cursor-pointer transition">Company ke bare mein batao</div>
-                </div>
-            </div>
-            <div id="msgs" class="max-w-3xl mx-auto space-y-10 py-10"></div>
         </div>
-
-        <div class="p-4 lg:pb-10 max-w-4xl mx-auto w-full">
-            <div class="human-input flex items-center p-2 lg:p-3 shadow-2xl shadow-blue-900/10">
-                <input id="userInput" type="text" placeholder="Insaan ki tarah pucho..." class="flex-1 px-4 text-base outline-none" onkeypress="if(event.key=='Enter') sendChat()">
-                <div class="flex items-center gap-2 lg:gap-4 pr-2">
-                    <button id="micBtn" onclick="startVoice()" class="w-12 h-12 flex items-center justify-center rounded-full text-blue-400 hover:bg-blue-500/10 transition">
-                        <i class="fa-solid fa-microphone text-xl"></i>
-                    </button>
-                    <button onclick="sendChat()" class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-600 text-white shadow-lg active:scale-90 transition">
-                        <i class="fa-solid fa-paper-plane"></i>
-                    </button>
-                </div>
-            </div>
-            <p class="text-[10px] text-center text-gray-600 mt-3 font-medium">Smile AI v3.0 | High Speed Processing | Human Intelligence Mode</p>
-        </div>
-    </main>
+    </div>
 
     <script>
-        const TAG = "smileai24-21";
-        
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        function shop(q) { window.open(`https://www.amazon.in/s?k=${q}&tag=${TAG}`, '_blank'); }
-        function ask(q) { document.getElementById('userInput').value = q; sendChat(); }
+        const amzId = "smileai24-21";
 
-        async function sendChat() {
-            const inp = document.getElementById('userInput');
-            const val = inp.value.trim();
-            if(!val) return;
+        function autoFill(t) { document.getElementById('q').value = t; startChat(); }
 
-            document.getElementById('welcome').style.display = 'none';
-            const msgs = document.getElementById('msgs');
+        async function startChat() {
+            const qInput = document.getElementById('q');
+            const query = qInput.value.trim();
+            if(!query) return;
+
+            document.getElementById('intro').style.display = 'none';
+            const chat = document.getElementById('chatbox');
             
-            // User Message
-            msgs.innerHTML += `<div class="flex justify-end"><div class="bg-[#2d2e30] px-6 py-3 rounded-[30px] rounded-tr-none max-w-[90%] text-sm shadow-xl">${val}</div></div>`;
-            inp.value = "";
+            // User side
+            chat.innerHTML += `<div class="flex justify-end w-full mb-6"><div class="bg-[#f0f4f9] px-5 py-3 rounded-2xl max-w-[80%]">${query}</div></div>`;
+            qInput.value = "";
 
-            // AI Skeleton (Thinking)
-            const aiId = 'ai_' + Date.now();
-            msgs.innerHTML += `<div class="flex gap-4 items-start">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-purple-600 flex-shrink-0 flex items-center justify-center text-[10px] font-bold shadow-lg shadow-blue-500/20">S</div>
-                <div id="${aiId}" class="text-gray-200 text-sm leading-relaxed mt-2 typing-effect">Smile AI soch raha hai...</div>
-            </div>`;
-            document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+            // AI Side
+            const aiRow = document.createElement('div');
+            aiRow.className = "msg-row";
+            aiRow.innerHTML = `<div class="ai-response"><div class="ai-icon">S</div><div class="res-text text-gray-700 leading-relaxed">प्रोसेसिंग...</div></div>`;
+            chat.appendChild(aiRow);
 
             try {
                 const res = await fetch('https://smile-financial-service-ai.onrender.com/chat', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({message: val})
+                    body: JSON.stringify({message: query})
                 });
-                const d = await res.json();
+                const data = await res.json();
                 
-                // Human-like Typing Effect
-                const el = document.getElementById(aiId);
-                el.classList.remove('typing-effect');
-                el.innerText = "";
-                let i = 0;
-                const text = d.reply;
-                function type() {
-                    if (i < text.length) {
-                        el.innerText += text.charAt(i);
-                        i++;
-                        document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
-                        setTimeout(type, 15); // Human typing speed
-                    }
+                // If it's a shopping query, link it
+                const text = data.reply;
+                aiRow.querySelector('.res-text').innerText = text;
+                
+                if(query.includes('खरीदना') || query.includes('Price') || query.includes('Amazon')) {
+                   window.open(`https://www.amazon.in/s?k=${query}&tag=${amzId}`, '_blank');
                 }
-                type();
-            } catch(e) {
-                document.getElementById(aiId).innerText = "Server thoda slow hai, Aarif Bhai. Ek baar check karein.";
+            } catch (e) {
+                aiRow.querySelector('.res-text').innerText = "क्षमा करें, रिस्पॉन्स में देरी हो रही है।";
             }
+            document.getElementById('scrollArea').scrollTop = document.getElementById('scrollArea').scrollHeight;
         }
 
-        function startVoice() {
-            const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if(!Speech) return alert("Bhai, browser support nahi kar raha.");
-            const rec = new Speech(); 
-            rec.lang = 'hi-IN'; // Default Hindi, par ye har bhasha samajhta hai
-            rec.start();
-            document.getElementById('micBtn').classList.add('bg-red-500/20', 'animate-pulse');
-            
-            rec.onresult = (e) => {
-                const speech = e.results[0][0].transcript;
-                document.getElementById('userInput').value = speech;
-                document.getElementById('micBtn').classList.remove('bg-red-500/20', 'animate-pulse');
-                sendChat();
-            };
-            rec.onerror = () => document.getElementById('micBtn').classList.remove('bg-red-500/20', 'animate-pulse');
+        function voiceIn() {
+            const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const r = new Rec(); r.lang = 'hi-IN';
+            r.start();
+            r.onresult = (e) => { document.getElementById('q').value = e.results[0][0].transcript; startChat(); }
         }
     </script>
 </body>

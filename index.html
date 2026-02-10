@@ -2,86 +2,107 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Smile AI - Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #f0f2f5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { padding: 12px; border-radius: 15px; max-width: 85%; font-size: 14px; }
+        .user { align-self: flex-end; background: #007bff; color: white; border-bottom-right-radius: 2px; }
+        .ai { align-self: flex-start; background: white; border-bottom-left-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+    </style>
 </head>
-<body class="bg-gray-100 h-screen flex flex-col">
+<body>
 
-    <header class="p-4 bg-white border-b flex justify-between items-center shadow-sm">
-        <span class="font-bold text-blue-600">Smile AI Pro</span>
-        <div id="u-img" class="w-8 h-8 rounded-full overflow-hidden border"></div>
-    </header>
+    <div id="login-box" class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+        <h1 class="text-3xl font-bold text-blue-600 mb-4">Smile AI</h1>
+        <button onclick="login()" class="bg-white border p-3 px-8 rounded-full shadow flex items-center gap-3">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
+            <span>Google Login</span>
+        </button>
+    </div>
 
-    <div id="chat-win" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+    <div id="app-content" class="hidden flex-1 flex flex-col overflow-hidden">
+        <header class="p-4 bg-white border-b flex justify-between items-center shadow-sm">
+            <div class="font-bold text-blue-600">Smile AI <span class="text-xs text-green-500">PRO</span></div>
+            <div id="user-p" class="w-8 h-8 rounded-full border"></div>
+        </header>
 
-    <div class="p-4 bg-white border-t">
-        <div class="flex items-center gap-2 bg-gray-100 p-2 rounded-full px-4">
-            <input id="inp" class="flex-1 bg-transparent outline-none p-1" placeholder="Puchiye ya Mic use karein...">
-            <button onclick="startMic()" id="mic-btn" class="text-gray-500 hover:text-blue-600"><i class="fa-solid fa-microphone text-xl"></i></button>
-            <button onclick="send()" class="text-blue-600 font-bold"><i class="fa-solid fa-paper-plane text-xl"></i></button>
+        <div id="chat-win" class="chat-area"></div>
+
+        <div class="p-3 bg-white border-t">
+            <div class="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-1">
+                <label for="file-up" class="cursor-pointer text-gray-500 hover:text-blue-600">
+                    <i class="fa-solid fa-paperclip text-lg"></i>
+                    <input type="file" id="file-up" class="hidden" onchange="alert('File selected!')">
+                </label>
+                <input id="inp" class="flex-1 bg-transparent outline-none p-2 text-sm" placeholder="Kuch puchiye...">
+                <button onclick="startMic()" id="mic-btn" class="text-gray-500"><i class="fa-solid fa-microphone text-lg"></i></button>
+                <button onclick="send()" class="text-blue-600"><i class="fa-solid fa-paper-plane text-xl"></i></button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Firebase Config (Aapki Key)
-        const firebaseConfig = {
+        const config = {
             apiKey: "AIzaSyAos_jqEHQ_urQiOQsxg2m_pNJBjor0CZQ",
             authDomain: "smileai-24.firebaseapp.com",
             projectId: "smileai-24",
             appId: "1:470315069061:web:31ccd87455ae19cc05c3ec"
         };
-        firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(config);
+
+        const login = () => firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
 
         firebase.auth().onAuthStateChanged(user => {
-            if(user) document.getElementById('u-img').innerHTML = `<img src="${user.photoURL}">`;
-            else window.location.reload(); // Simple redirect logic
+            if(user) {
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+                document.getElementById('user-p').innerHTML = `<img class="rounded-full" src="${user.photoURL}">`;
+            }
         });
 
-        // VOICE RECOGNITION (Mic Function)
         function startMic() {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'hi-IN';
-            document.getElementById('mic-btn').classList.add('text-red-500');
-            
-            recognition.onresult = (event) => {
-                const text = event.results[0][0].transcript;
-                document.getElementById('inp').value = text;
-                send();
-            };
-            
-            recognition.onend = () => {
-                document.getElementById('mic-btn').classList.remove('text-red-500');
-            };
-            recognition.start();
+            const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if(!Speech) return alert("Mic not supported in this browser");
+            const rec = new Speech();
+            rec.lang = 'hi-IN';
+            rec.onstart = () => document.getElementById('mic-btn').style.color = 'red';
+            rec.onresult = (e) => { document.getElementById('inp').value = e.results[0][0].transcript; send(); };
+            rec.onend = () => document.getElementById('mic-btn').style.color = '#6b7280';
+            rec.start();
         }
 
         async function send() {
             const inp = document.getElementById('inp');
             const win = document.getElementById('chat-win');
-            const val = inp.value.trim();
-            if(!val) return;
+            if(!inp.value.trim()) return;
 
-            win.innerHTML += `<div class="text-right"><span class="bg-blue-600 text-white p-2 px-4 rounded-lg inline-block">${val}</span></div>`;
+            const userVal = inp.value;
+            win.innerHTML += `<div class="bubble user">${userVal}</div>`;
             inp.value = "";
             
             const aiB = document.createElement('div');
-            aiB.innerHTML = `<span class="bg-white p-2 px-4 rounded-lg border inline-block">Smile AI Soch raha hai...</span>`;
+            aiB.className = "bubble ai";
+            aiB.innerText = "...";
             win.appendChild(aiB);
+            win.scrollTop = win.scrollHeight;
 
             try {
                 const r = await fetch('https://smile-financial-service-ai.onrender.com/chat', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ message: val })
+                    body: JSON.stringify({ message: userVal })
                 });
                 const d = await r.json();
-                aiB.innerHTML = `<span class="bg-white p-2 px-4 rounded-lg border inline-block">${d.reply}</span>`;
+                aiB.innerText = d.reply;
             } catch (e) {
-                aiB.innerText = "Connection Error!";
+                aiB.innerText = "Error: Check Render Server!";
             }
             win.scrollTop = win.scrollHeight;
         }

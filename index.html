@@ -3,107 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smile AI - Superfast</title>
+    <title>Smile AI - Mission 20 Lakh</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Aapka Real Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAos_jqEHQ_urQiOQsxg2m_pNJBjor0CZQ",
+            authDomain: "smileai-24.firebaseapp.com",
+            projectId: "smileai-24",
+            storageBucket: "smileai-24.firebasestorage.app",
+            messagingSenderId: "470315069061",
+            appId: "1:470315069061:web:31ccd87455ae19cc05c3ec"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // Login Function
+        window.handleLogin = async () => {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Login Error", error);
+                alert("Login fail ho gaya, internet check karein!");
+            }
+        };
+
+        // Logout Function
+        window.handleLogout = () => signOut(auth);
+
+        // Auth Listener (Check if user is logged in)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('userName').innerText = user.displayName;
+                document.getElementById('userPic').src = user.photoURL;
+                console.log("Logged in user:", user.email);
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+            }
+        });
+    </script>
+
     <style>
-        body { background: #0b0b0b; color: #fff; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
-        .sidebar { width: 260px; background: #161616; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { background: #0b0b0b; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
+        .sidebar { width: 260px; background: #161616; transition: 0.3s; }
         .sidebar.closed { margin-left: -260px; }
-        .main-chat { flex: 1; background: #0b0b0b; display: flex; flex-direction: column; }
-        /* Smooth Scrolling */
-        .chat-window { flex: 1; overflow-y: auto; scroll-behavior: smooth; }
-        /* Fast Reply Animation */
-        .typing { font-size: 14px; color: #aaa; margin-bottom: 10px; display: none; }
-        .input-box { background: #202123; border: 1px solid #444; border-radius: 24px; transition: 0.2s; }
-        .input-box:focus-within { border-color: #4285f4; box-shadow: 0 0 10px rgba(66, 133, 244, 0.2); }
-        .btn-login { background: #4285f4; padding: 8px 20px; border-radius: 20px; font-weight: bold; }
+        .main { flex: 1; display: flex; flex-direction: column; background: #0b0b0b; position: relative; }
+        .login-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        .input-bar { background: #202123; border: 1px solid #444; border-radius: 24px; padding: 8px 16px; margin: 20px; }
+        .ai-text { background: linear-gradient(70deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
 <body class="flex">
 
+    <div id="loginOverlay" class="login-overlay">
+        <h1 class="text-4xl font-bold ai-text mb-4 italic">Smile AI</h1>
+        <p class="text-gray-400 mb-8">Bhai, pehle login karein taaki aapki shopping aur chat safe rahe.</p>
+        <button onclick="handleLogin()" class="bg-white text-black px-6 py-3 rounded-full font-bold flex items-center gap-3 hover:bg-gray-200 transition">
+            <img src="https://www.google.com/favicon.ico" class="w-5"> Login with Google
+        </button>
+    </div>
+
     <div class="sidebar border-r border-gray-800 flex flex-col" id="side">
-        <div class="p-6 text-2xl font-bold text-blue-500 italic">Smile AI</div>
-        <div class="flex-1 px-4 space-y-2 overflow-y-auto" id="categories">
-            <p class="text-[10px] text-gray-500 uppercase font-bold mt-4">Shopping Mall</p>
-            <div onclick="shop('Clothes')" class="p-2 hover:bg-gray-800 rounded cursor-pointer text-sm"><i class="fa-solid fa-shirt mr-2"></i>Fashion</div>
-            <div onclick="shop('Medicines')" class="p-2 hover:bg-gray-800 rounded cursor-pointer text-sm"><i class="fa-solid fa-pills mr-2"></i>Health</div>
-            <div onclick="shop('Electronics')" class="p-2 hover:bg-gray-800 rounded cursor-pointer text-sm"><i class="fa-solid fa-laptop mr-2"></i>Gadgets</div>
+        <div class="p-6 text-2xl font-bold ai-text italic">Smile AI</div>
+        <div class="flex-1 overflow-y-auto px-4 space-y-1">
+            <p class="text-[10px] text-gray-500 font-bold uppercase mb-2">Shopping Center</p>
+            <div onclick="shop('Clothes')" class="p-2 hover:bg-gray-800 rounded cursor-pointer text-sm"><i class="fa-solid fa-shirt mr-3 text-blue-400"></i>Fashion</div>
+            <div onclick="shop('Mobiles')" class="p-2 hover:bg-gray-800 rounded cursor-pointer text-sm"><i class="fa-solid fa-mobile mr-3 text-yellow-400"></i>Electronics</div>
+            <div onclick="shop('Medicine')" class="p-2 hover:bg-gray-800 rounded cursor-pointer text-sm"><i class="fa-solid fa-pills mr-3 text-green-400"></i>Health</div>
         </div>
-        <div class="p-4 border-t border-gray-800" id="authSection">
-            <button id="loginBtn" onclick="handleLogin()" class="btn-login w-full text-sm">Login with Google</button>
+        <div class="p-4 border-t border-gray-800">
+            <div class="flex items-center gap-3 mb-4">
+                <img id="userPic" class="w-8 h-8 rounded-full border border-gray-600">
+                <span id="userName" class="text-xs truncate font-medium">Aarif Bhai</span>
+            </div>
+            <button onclick="handleLogout()" class="text-xs text-red-500"><i class="fa-solid fa-sign-out mr-2"></i>Logout</button>
         </div>
     </div>
 
-    <div class="main-chat">
-        <header class="p-4 flex items-center justify-between bg-[#0b0b0b]">
-            <i class="fa-solid fa-bars cursor-pointer" onclick="toggleSide()"></i>
-            <div id="userProfile" class="hidden flex items-center gap-2">
-                <span id="userName" class="text-xs">Aarif</span>
-                <img id="userPic" class="w-8 h-8 rounded-full border border-gray-600">
-                <button onclick="handleLogout()" class="text-[10px] text-red-500 underline">Logout</button>
-            </div>
+    <div class="main">
+        <header class="p-4 border-b border-gray-900 flex justify-between items-center">
+            <i class="fa-solid fa-bars cursor-pointer" onclick="document.getElementById('side').classList.toggle('closed')"></i>
+            <span class="text-xs text-gray-500 font-mono italic">Partner ID: smileai24-21</span>
         </header>
 
-        <div class="chat-window p-6" id="chat">
-            <div id="welcome" class="text-center mt-20">
-                <h2 class="text-3xl font-bold mb-4">Kaise ho, Bhai?</h2>
-                <p class="text-gray-400">Main superfast mode mein hoon. Pucho kya dhoondna hai?</p>
+        <div class="flex-1 overflow-y-auto p-6" id="chat">
+            <div id="welcome" class="max-w-2xl mx-auto mt-10">
+                <h2 class="text-4xl font-bold mb-4">Shubh Din, <span class="ai-text">Smile AI</span> ready hai.</h2>
+                <p class="text-gray-400">Aapka mission 20 Lakh shuru hota hai. Kuch bhi pucho ya kharido!</p>
             </div>
             <div id="msgs" class="max-w-3xl mx-auto space-y-6"></div>
-            <div id="typing" class="typing max-w-3xl mx-auto mt-4">Smile AI soch raha hai...</div>
         </div>
 
-        <div class="p-4 bg-[#0b0b0b]">
-            <div class="input-box max-w-3xl mx-auto flex items-center px-4 py-2">
-                <input id="q" type="text" placeholder="Sab kuch milega yahan..." class="flex-1 bg-transparent border-none outline-none text-sm">
-                <i onclick="startMic()" class="fa-solid fa-microphone text-blue-400 cursor-pointer mx-2"></i>
-                <i onclick="send()" class="fa-solid fa-paper-plane text-blue-500 cursor-pointer"></i>
-            </div>
+        <div class="input-bar max-w-3xl mx-auto flex items-center w-[90%] mb-10">
+            <input id="q" type="text" placeholder="Kya help chahiye, Bhai?" class="bg-transparent flex-1 outline-none text-sm" onkeypress="if(event.key=='Enter') send()">
+            <i onclick="send()" class="fa-solid fa-paper-plane text-blue-500 cursor-pointer ml-4"></i>
         </div>
     </div>
 
     <script>
-        const ID = "smileai24-21";
-
-        function toggleSide() { document.getElementById('side').classList.toggle('closed'); }
-        
-        function shop(t) { window.open(`https://www.amazon.in/s?k=${t}&tag=${ID}`, '_blank'); }
+        const TAG = "smileai24-21";
+        function shop(t) { window.open(`https://www.amazon.in/s?k=${t}&tag=${TAG}`, '_blank'); }
 
         async function send() {
             const q = document.getElementById('q').value;
             if(!q) return;
-
             document.getElementById('welcome').style.display = 'none';
             const msgs = document.getElementById('msgs');
-            msgs.innerHTML += `<div class="flex justify-end"><span class="bg-blue-600 px-4 py-2 rounded-2xl text-sm">${q}</span></div>`;
+            msgs.innerHTML += `<div class="flex justify-end"><span class="bg-[#303132] px-4 py-2 rounded-2xl text-sm">${q}</span></div>`;
             document.getElementById('q').value = "";
-            document.getElementById('typing').style.display = 'block';
 
             try {
-                // Backend ko fast banane ke liye we use a fast timeout
                 const res = await fetch('https://smile-financial-service-ai.onrender.com/chat', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({message: q})
                 });
                 const d = await res.json();
-                document.getElementById('typing').style.display = 'none';
-                msgs.innerHTML += `<div class="flex gap-3"><div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-xs">S</div><div class="bg-[#202123] px-4 py-2 rounded-2xl text-sm leading-relaxed">${d.reply}</div></div>`;
+                msgs.innerHTML += `<div class="flex gap-3"><div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-[10px] font-bold">S</div><div class="bg-transparent px-4 py-2 rounded-2xl text-sm leading-relaxed">${d.reply}</div></div>`;
                 document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
-            } catch(e) {
-                document.getElementById('typing').innerText = "Network slow hai, Bhai!";
-            }
-        }
-
-        // --- Firebase Integration Logic (Placeholder) ---
-        function handleLogin() {
-            // Yahan hum Firebase SDK add karenge agle step mein
-            alert("Firebase Console se connect karte hi ye chalu ho jayega!");
-        }
-
-        function handleLogout() {
-            location.reload();
+            } catch(e) { console.log(e); }
         }
     </script>
 </body>

@@ -3,125 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smile AI Super-App</title>
+    <title>Smile AI - Mission 20 Lakh</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #131314; --panel: #1e1f20; --text: #e3e3e3; --blue: #8ab4f8; }
-        body { background: var(--bg); color: var(--text); font-family: 'Google Sans', Arial; height: 100vh; overflow: hidden; display: flex; }
-        
-        /* Sidebar Gemini Style */
-        .sidebar { width: 280px; background: #1e1f20; padding: 20px; display: flex; flex-direction: column; transition: 0.3s; }
-        @media (max-width: 768px) { .sidebar { display: none; } }
-        
-        .nav-item { padding: 12px; border-radius: 25px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; margin-bottom: 5px; }
-        .nav-item:hover { background: #333; }
-        .nav-item i { margin-right: 15px; width: 20px; }
-
-        /* Main Area */
-        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
-        .chat-container { flex: 1; overflow-y: auto; padding: 20px 10%; scrollbar-width: none; }
-        
-        /* Greeting Header */
-        .greeting { font-size: 32px; font-weight: 500; margin-top: 50px; background: linear-gradient(to right, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        /* Category Grid */
-        .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 30px; }
-        .cat-card { background: var(--panel); padding: 20px; border-radius: 12px; cursor: pointer; text-align: center; border: 1px solid #333; }
-        .cat-card:hover { border-color: var(--blue); }
-
-        /* Input Bar */
-        .input-wrapper { padding: 20px 10%; background: var(--bg); }
-        .input-box { background: var(--panel); border-radius: 32px; padding: 10px 20px; display: flex; align-items: center; border: 1px solid #444; }
-        input { background: transparent; border: none; outline: none; color: white; flex: 1; font-size: 16px; padding: 10px; }
-        
-        .active-mic { color: #ea4335; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        :root { --gemini-bg: #131314; --gemini-panel: #1e1f20; }
+        body { background: var(--gemini-bg); color: #e3e3e3; font-family: 'Inter', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .sidebar { width: 260px; background: var(--gemini-panel); padding: 20px; display: none; } /* Initially hidden for login */
+        .main-chat { flex: 1; display: flex; flex-direction: column; position: relative; }
+        .greeting-text { font-size: clamp(24px, 5vw, 40px); background: linear-gradient(to right, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
+        .input-bar { background: #1e1f20; border-radius: 30px; padding: 12px 20px; display: flex; align-items: center; border: 1px solid #444; max-width: 800px; margin: 0 auto; width: 90%; }
+        input { background: transparent; border: none; outline: none; color: white; flex: 1; font-size: 16px; }
+        .mic-anim { color: #ea4335; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        #loginOverlay { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; flex-direction: column; items-center; justify-center; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <button class="nav-item mb-10"><i class="fa-solid fa-plus"></i> New Chat</button>
-        <div class="nav-item"><i class="fa-solid fa-gem"></i> Gems</div>
-        <div class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> History</div>
-        <div class="mt-auto">
-            <div class="nav-item"><i class="fa-solid fa-gear"></i> Settings</div>
-            <div class="nav-item"><i class="fa-solid fa-circle-user"></i> Logout</div>
+    <div id="loginOverlay">
+        <div class="text-center">
+            <h1 class="text-4xl font-bold mb-6">Smile AI</h1>
+            <p class="text-gray-400 mb-8">Duniya ka sabse powerful AI assistant.</p>
+            <button onclick="startApp()" class="bg-blue-600 px-8 py-3 rounded-full font-bold hover:bg-blue-700 transition">Login with One-Tap</button>
         </div>
     </div>
 
-    <div class="main-content">
-        <header class="p-4 flex justify-between items-center lg:hidden">
-            <i class="fa-solid fa-bars text-xl cursor-pointer"></i>
-            <span class="font-bold">Smile AI</span>
-            <i class="fa-solid fa-circle-user text-xl"></i>
+    <div class="main-chat hidden" id="mainApp">
+        <header class="p-4 flex justify-between items-center">
+            <i class="fa-solid fa-bars text-xl"></i>
+            <span class="font-bold text-xl">Smile AI</span>
+            <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">B</div>
         </header>
 
-        <div class="chat-container" id="chatContainer">
-            <h2 id="greetText" class="greeting">Good Morning, Bhai</h2>
-            <p class="text-xl text-gray-500 mt-2">Main aapki kaise madad kar sakta hoon?</p>
-
-            <div class="category-grid">
-                <div class="cat-card" onclick="ask('Shopping Men')"><i class="fa-solid fa-shirt mb-2 block"></i> Men Fashion</div>
-                <div class="cat-card" onclick="ask('Ayurvedic Health')"><i class="fa-solid fa-leaf mb-2 block"></i> Ayurvedic</div>
-                <div class="cat-card" onclick="ask('Electronics')"><i class="fa-solid fa-laptop mb-2 block"></i> Gadgets</div>
-                <div class="cat-card" onclick="ask('Weight Loss')"><i class="fa-solid fa-weight-scale mb-2 block"></i> Health</div>
+        <div class="flex-1 overflow-y-auto px-6 py-4" id="chatWindow">
+            <div id="welcomeView" class="mt-20 max-w-2xl mx-auto">
+                <h2 id="greet" class="greeting-text">Good Morning</h2>
+                <p class="text-xl text-gray-500 mt-2">Main aapka Smile AI hoon. Aaj hum 20 lakh ke mission par kya kaam karein?</p>
+                
+                <div class="grid grid-cols-2 gap-4 mt-10">
+                    <div class="p-4 bg-[#1e1f20] rounded-xl cursor-pointer hover:border-blue-500 border border-transparent" onclick="sendQuick('Ayurvedic health products list')">
+                        <i class="fa-solid fa-leaf text-green-500 mb-2"></i><br>Ayurvedic & Health
+                    </div>
+                    <div class="p-4 bg-[#1e1f20] rounded-xl cursor-pointer hover:border-blue-500 border border-transparent" onclick="sendQuick('Latest electronics gadgets shopping')">
+                        <i class="fa-solid fa-mobile text-blue-500 mb-2"></i><br>Electronics
+                    </div>
+                </div>
             </div>
+            <div id="messages" class="space-y-6 max-w-3xl mx-auto mt-10"></div>
         </div>
 
-        <div class="input-wrapper">
-            <div class="input-box">
-                <i id="micIcon" onclick="startVoice()" class="fa-solid fa-microphone text-xl cursor-pointer px-2 text-blue-400"></i>
-                <input id="userInput" type="text" placeholder="Smile AI se kuch bhi pucho...">
-                <i class="fa-solid fa-paper-plane text-xl cursor-pointer px-2 text-gray-400" onclick="process()"></i>
+        <div class="pb-8 pt-4 bg-[#131314]">
+            <div class="input-bar">
+                <i id="micBtn" onclick="listen()" class="fa-solid fa-microphone text-blue-400 text-xl cursor-pointer mr-4"></i>
+                <input id="userText" type="text" placeholder="Smile AI se kuch bhi pucho..." onkeypress="if(event.key=='Enter') process()">
+                <i class="fa-solid fa-paper-plane text-gray-400 text-xl cursor-pointer ml-4" onclick="process()"></i>
             </div>
-            <p class="text-[10px] text-center mt-2 text-gray-600">Smile AI can make mistakes. Mission 20 Lakh Active.</p>
         </div>
     </div>
 
     <script>
-        // 1. Time-based Greeting
-        const hour = new Date().getHours();
-        const greetText = document.getElementById('greetText');
-        if (hour < 12) greetText.innerText = "Good Morning, Bhai";
-        else if (hour < 17) greetText.innerText = "Good Afternoon, Bhai";
-        else greetText.innerText = "Good Evening, Bhai";
-
-        // 2. Natural Voice Output (TTS)
-        function speak(text) {
-            const synth = window.speechSynthesis;
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.lang = 'hi-IN'; // Natural Hindi
-            utter.rate = 1.0;
-            synth.speak(utter);
+        function startApp() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainApp').classList.remove('hidden');
+            setGreeting();
         }
 
-        // 3. Voice Recognition
-        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        const mic = new Recognition();
-        mic.lang = 'hi-IN';
+        function setGreeting() {
+            const h = new Date().getHours();
+            const g = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
+            document.getElementById('greet').innerText = g + ", Bhai";
+        }
 
-        function startVoice() {
+        // Voice Engine
+        const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const mic = new Rec(); mic.lang = 'hi-IN';
+
+        function listen() {
             mic.start();
-            document.getElementById('micIcon').classList.add('active-mic');
+            document.getElementById('micBtn').classList.add('mic-anim');
         }
 
         mic.onresult = (e) => {
-            const result = e.results[0][0].transcript;
-            document.getElementById('userInput').value = result;
-            document.getElementById('micIcon').classList.remove('active-mic');
+            document.getElementById('userText').value = e.results[0][0].transcript;
+            document.getElementById('micBtn').classList.remove('mic-anim');
             process();
         };
 
+        // Speech Output
+        function speak(txt) {
+            const s = new SpeechSynthesisUtterance(txt);
+            s.lang = 'hi-IN';
+            window.speechSynthesis.speak(s);
+        }
+
         async function process() {
-            const input = document.getElementById('userInput');
-            const box = document.getElementById('chatContainer');
-            const val = input.value;
+            const inp = document.getElementById('userText');
+            const val = inp.value.trim();
             if(!val) return;
 
-            input.value = "";
-            box.innerHTML += `<div class="mt-8 text-right"><span class="bg-blue-600 p-3 rounded-2xl">${val}</span></div>`;
+            document.getElementById('welcomeView').style.display = 'none';
+            const msgBox = document.getElementById('messages');
+            msgBox.innerHTML += `<div class="text-right"><span class="bg-[#303132] p-3 rounded-2xl inline-block">${val}</span></div>`;
+            inp.value = "";
+
+            const aiMsg = document.createElement('div');
+            aiMsg.className = "flex gap-4 items-start";
+            aiMsg.innerHTML = `<div class="w-8 h-8 bg-blue-600 rounded-full flex-shrink-0 pt-1 text-center">S</div><div class="text-gray-200">...</div>`;
+            msgBox.appendChild(aiMsg);
 
             try {
                 const res = await fetch('https://smile-financial-service-ai.onrender.com/chat', {
@@ -130,21 +119,15 @@
                     body: JSON.stringify({message: val})
                 });
                 const data = await res.json();
-                
-                // AI Response + Speaking
-                box.innerHTML += `<div class="mt-8 flex gap-4"><div class="w-8 h-8 bg-purple-600 rounded-full flex-shrink-0">S</div><div class="text-gray-300 leading-relaxed">${data.reply}</div></div>`;
-                speak(data.reply); // AI BOLKE JAWAB DEGA
-                
+                aiMsg.querySelector('div:last-child').innerText = data.reply;
+                speak(data.reply); // Bol kar jawab
             } catch (e) {
-                box.innerHTML += `<div class="text-red-500 mt-4">Server slow hai, bhai...</div>`;
+                aiMsg.querySelector('div:last-child').innerText = "Bhai, backend connect nahi ho raha.";
             }
-            box.scrollTop = box.scrollHeight;
+            document.getElementById('chatWindow').scrollTop = document.getElementById('chatWindow').scrollHeight;
         }
 
-        function ask(text) {
-            document.getElementById('userInput').value = text;
-            process();
-        }
+        function sendQuick(t) { document.getElementById('userText').value = t; process(); }
     </script>
 </body>
 </html>

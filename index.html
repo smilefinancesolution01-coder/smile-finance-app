@@ -3,75 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smile AI - Shopping Hub</title>
+    <title>Smile AI - Everything App</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: #131314; color: #e3e3e3; font-family: 'Google Sans', sans-serif; height: 100vh; display: flex; overflow: hidden; }
+        .sidebar { width: 280px; background: #1e1f20; height: 100%; transition: 0.3s; display: flex; flex-direction: column; }
+        .sidebar.closed { margin-left: -280px; }
+        .main-content { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; }
+        .chat-container { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; }
+        .category-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .cat-card { background: #28292a; padding: 12px; border-radius: 12px; text-align: center; font-size: 11px; cursor: pointer; border: 1px solid #3c4043; transition: 0.2s; }
+        .cat-card:hover { background: #3c4043; transform: scale(1.05); }
+        .input-area { background: #1e1f20; border-radius: 30px; padding: 10px 20px; display: flex; align-items: center; border: 1px solid #444; margin: 20px; }
+        input { background: transparent; border: none; outline: none; color: white; flex: 1; font-size: 15px; }
+        .ai-glow { background: linear-gradient(70deg, #4285f4, #9b72cb, #d96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
+        @media (max-width: 768px) { .sidebar { position: absolute; z-index: 100; } }
+    </style>
 </head>
-<body class="bg-[#0f1012] text-white">
+<body>
 
-    <header class="p-4 border-b border-gray-800 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-blue-500 italic">Smile AI</h1>
-        <div class="text-[10px] bg-green-600 px-2 py-1 rounded">ID: smileai24-21</div>
-    </header>
-
-    <div class="p-6">
-        <h2 class="text-xl font-bold mb-4">Aarif Bhai, Kya dhundun aaj?</h2>
+    <div class="sidebar shadow-2xl" id="sidebar">
+        <div class="p-6 flex items-center justify-between">
+            <span class="text-xl font-bold ai-glow italic">Smile AI</span>
+            <button onclick="toggleSidebar()" class="lg:hidden text-xl"><i class="fa-solid fa-xmark"></i></button>
+        </div>
         
-        <div class="grid grid-cols-2 gap-4 mb-10">
-            <button onclick="openShop('Ayurvedic Medicine')" class="bg-gray-800 p-4 rounded-xl border border-gray-700 hover:border-blue-500">
-                <i class="fa-solid fa-leaf text-green-500 text-2xl"></i><br>Ayurvedic
-            </button>
-            <button onclick="openShop('Trending Electronics Gadgets')" class="bg-gray-800 p-4 rounded-xl border border-gray-700 hover:border-blue-500">
-                <i class="fa-solid fa-bolt text-yellow-500 text-2xl"></i><br>Gadgets
-            </button>
-            <button onclick="openShop('Mens Fashion Clothes')" class="bg-gray-800 p-4 rounded-xl border border-gray-700 hover:border-blue-500">
-                <i class="fa-solid fa-shirt text-blue-500 text-2xl"></i><br>Fashion
-            </button>
-            <button onclick="openShop('Kids Toys Games')" class="bg-gray-800 p-4 rounded-xl border border-gray-700 hover:border-blue-500">
-                <i class="fa-solid fa-gamepad text-red-500 text-2xl"></i><br>Toys
-            </button>
+        <div class="flex-1 overflow-y-auto px-4 space-y-2">
+            <div class="text-xs text-gray-500 font-bold ml-2 mt-4 uppercase">Shopping Mall</div>
+            <button onclick="shop('Clothes Fashion')" class="w-full text-left p-3 hover:bg-[#3c4043] rounded-lg text-sm"><i class="fa-solid fa-shirt mr-3 text-blue-400"></i>Fashion</button>
+            <button onclick="shop('Latest Shoes')" class="w-full text-left p-3 hover:bg-[#3c4043] rounded-lg text-sm"><i class="fa-solid fa-shoe-prints mr-3 text-orange-400"></i>Shoes</button>
+            <button onclick="shop('Ayurvedic Health')" class="w-full text-left p-3 hover:bg-[#3c4043] rounded-lg text-sm"><i class="fa-solid fa-leaf mr-3 text-green-400"></i>Ayurveda</button>
+            <button onclick="shop('Animal Food Pets')" class="w-full text-left p-3 hover:bg-[#3c4043] rounded-lg text-sm"><i class="fa-solid fa-paw mr-3 text-red-400"></i>Pets & Animals</button>
+            <button onclick="shop('Electronics Gadgets')" class="w-full text-left p-3 hover:bg-[#3c4043] rounded-lg text-sm"><i class="fa-solid fa-bolt mr-3 text-yellow-400"></i>Electronics</button>
+            <button onclick="shop('Kids Toys')" class="w-full text-left p-3 hover:bg-[#3c4043] rounded-lg text-sm"><i class="fa-solid fa-robot mr-3 text-purple-400"></i>Toys</button>
+            
+            <div class="text-xs text-gray-500 font-bold ml-2 mt-6 uppercase">Education & Help</div>
+            <button onclick="askAI('Help me with study')" class="w-full text-left p-3 hover:bg-[#3c4043] rounded-lg text-sm"><i class="fa-solid fa-book mr-3 text-blue-300"></i>Reading/Study</button>
+            <button onclick="askAI('Write a story/essay')" class="w-full text-left p-3 hover:bg-[#3c4043] rounded-lg text-sm"><i class="fa-solid fa-pen-nib mr-3 text-pink-400"></i>Writing</button>
         </div>
 
-        <div id="chatBox" class="bg-gray-900 p-4 rounded-lg min-h-[100px] border border-gray-800 mb-20">
-            <p class="text-gray-500 text-sm italic" id="status">Smile AI ready hai...</p>
+        <div class="p-4 border-t border-gray-700">
+            <button class="w-full text-left p-3 hover:bg-[#3c4043] rounded-lg text-sm mb-2"><i class="fa-solid fa-user-circle mr-3"></i>Md Aarif</button>
+            <button onclick="location.reload()" class="w-full text-left p-3 hover:bg-[#3c4043] rounded-lg text-sm text-red-400"><i class="fa-solid fa-right-from-bracket mr-3"></i>Logout</button>
         </div>
     </div>
 
-    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 w-full px-6">
-        <div class="bg-gray-800 rounded-full p-2 flex items-center border border-gray-600">
-            <input id="userInput" type="text" placeholder="Bol kar ya likh kar pucho..." class="bg-transparent flex-1 outline-none px-4 text-sm">
-            <button onclick="startVoice()" class="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center">
-                <i class="fa-solid fa-microphone"></i>
-            </button>
+    <div class="main-content">
+        <header class="p-4 flex items-center gap-4">
+            <button onclick="toggleSidebar()" class="text-xl"><i class="fa-solid fa-bars"></i></button>
+            <div class="text-lg font-medium">Shubh Din, <span class="ai-glow">Aarif Bhai</span></div>
+        </header>
+
+        <div class="chat-container" id="chatWindow">
+            <div id="welcomeView" class="max-w-2xl mx-auto mt-10">
+                <h1 class="text-4xl font-bold mb-6">Hello, main Smile AI hoon.</h1>
+                <p class="text-gray-400 mb-8">Main ek insaan ki tarah aapki madad kar sakta hoon—Shopping ho, Padhayi ho, ya Life advice.</p>
+                
+                <div class="category-grid">
+                    <div class="cat-card" onclick="shop('Mens Winter Wear')"><i class="fa-solid fa-jacket mb-2 block text-lg"></i>Fashion</div>
+                    <div class="cat-card" onclick="shop('Herbal Medicine')"><i class="fa-solid fa-flask-pill mb-2 block text-lg"></i>Medicine</div>
+                    <div class="cat-card" onclick="shop('Smart Watches')"><i class="fa-solid fa-clock mb-2 block text-lg"></i>Gadgets</div>
+                </div>
+            </div>
+            <div id="messages" class="space-y-6 max-w-3xl mx-auto"></div>
+        </div>
+
+        <div class="max-w-4xl mx-auto w-full">
+            <div class="input-area shadow-xl">
+                <i class="fa-solid fa-paperclip text-gray-400 mr-4 cursor-pointer"></i>
+                <input id="userInp" type="text" placeholder="Mujhse kuch bhi pucho, main sab jaanta hoon..." onkeypress="if(event.key=='Enter') process()">
+                <div class="flex gap-4 ml-4">
+                    <i id="micBtn" onclick="startVoice()" class="fa-solid fa-microphone text-blue-400 cursor-pointer text-xl"></i>
+                    <i onclick="process()" class="fa-solid fa-paper-plane text-blue-500 cursor-pointer text-xl"></i>
+                </div>
+            </div>
+            <p class="text-[10px] text-center text-gray-500 pb-4">Smile AI: Your Personal Shopping Mall & Advisor | ID: smileai24-21</p>
         </div>
     </div>
 
     <script>
-        const TRACKING_ID = "smileai24-21";
+        const TAG = "smileai24-21";
 
-        function openShop(item) {
-            // Ye link har click ko aapki ID se jodd dega
-            const amazonUrl = `https://www.amazon.in/s?k=${encodeURIComponent(item)}&tag=${TRACKING_ID}`;
-            window.open(amazonUrl, '_blank');
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
+
+        function shop(item) {
+            window.open(`https://www.amazon.in/s?k=${encodeURIComponent(item)}&tag=${TAG}`, '_blank');
+        }
+
+        async function process() {
+            const inp = document.getElementById('userInp');
+            const val = inp.value.trim();
+            if(!val) return;
+
+            document.getElementById('welcomeView').style.display = 'none';
+            const msgBox = document.getElementById('messages');
+            msgBox.innerHTML += `<div class="flex justify-end"><div class="bg-[#303132] p-4 rounded-2xl max-w-[80%]">${val}</div></div>`;
+            inp.value = "";
+
+            const aiMsg = document.createElement('div');
+            aiMsg.className = "flex gap-4";
+            aiMsg.innerHTML = `<div class="w-8 h-8 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center font-bold">S</div><div class="bg-[#1e1f20] p-4 rounded-2xl max-w-[80%] ai-glow">...</div>`;
+            msgBox.appendChild(aiMsg);
+
+            // API CALL
+            try {
+                const res = await fetch('https://smile-financial-service-ai.onrender.com/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: val})
+                });
+                const data = await res.json();
+                aiMsg.querySelector('.ai-glow').innerText = data.reply;
+                aiMsg.querySelector('.ai-glow').classList.remove('ai-glow');
+                aiMsg.querySelector('div:last-child').style.color = '#e3e3e3';
+            } catch (e) {
+                aiMsg.querySelector('.ai-glow').innerText = "Bhai, server connect nahi ho raha.";
+            }
+            document.getElementById('chatWindow').scrollTop = document.getElementById('chatWindow').scrollHeight;
         }
 
         function startVoice() {
             const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const rec = new Speech();
-            rec.lang = 'hi-IN';
+            const rec = new Speech(); rec.lang = 'hi-IN';
             rec.start();
-            
-            document.getElementById('status').innerText = "Sun raha hoon...";
-
+            document.getElementById('micBtn').classList.add('animate-pulse', 'text-red-500');
             rec.onresult = (e) => {
-                const speechToText = e.results[0][0].transcript;
-                document.getElementById('userInput').value = speechToText;
-                document.getElementById('status').innerText = "Searching for: " + speechToText;
-                
-                // Agar user shopping ki baat kare
-                setTimeout(() => {
-                    openShop(speechToText);
-                }, 1000);
+                document.getElementById('userInp').value = e.results[0][0].transcript;
+                document.getElementById('micBtn').classList.remove('animate-pulse', 'text-red-500');
+                process();
             };
         }
     </script>
